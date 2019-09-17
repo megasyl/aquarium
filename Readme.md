@@ -3,6 +3,7 @@
 Aquarium is a personnal project I made for fun to learn about neural networks and genetic algorithms.
 It uses [Neataptic](https://wagenaartje.github.io/neataptic/) and [p5.js](https://p5js.org/)
 
+Checkout the [live demo](https://megasyl.github.io/aquarium/) !
 ## Objective
 
 The objective is to simulate an environnement for living forms whose only goal is to eat food and survive. Under an unsupervises training, they'll have to learn to recognise food and eat it, or die :(
