@@ -6,7 +6,7 @@ class Entity {
         this.yVelocity = 0;
         this.xAcceleration = 0;
         this.yAcceleration = 0;
-        this.maxSpeed = 1;
+        this.maxSpeed = 10;
         this.angle = 0;
 
         this.maxHealth = 1000;
@@ -17,9 +17,8 @@ class Entity {
         this.i = i;
 
         this.size = 25;
-        this.smellDistance = 100;
+        this.smellDistance = 200;
 
-        this.detectedFood;
         this.alive = true;
     }
 
@@ -33,8 +32,8 @@ class Entity {
         const input = this.detect();
         const output = this.brain.activate(input);
         //console.log("ENTITY", this.i, input, output)
-        this.angle = output[0] * Math.PI;
-        this.velocityFactor = output[1] * 0.2;
+        this.angle = output[0] * 2 * Math.PI;
+        this.velocityFactor = output[1] * this.maxSpeed;
 
         // Calculate the new direction
         this.xAcceleration = Math.cos(this.angle) * this.velocityFactor;
@@ -55,15 +54,24 @@ class Entity {
         this.y = this.y >= windowHeight ? windowHeight : this.y <= 0 ? 0 : this.y;
 
         // Calculate rebound
-        if(this.x === 0 || this.x === windowWidth) this.xVelocity = -this.xVelocity;
-        if(this.y === 0 || this.y === windowHeight) this.yVelocity = -this.yVelocity;
+        if(this.x === 0 || this.x === windowWidth) {
+            this.xVelocity = -this.xVelocity;
+            this.health -= 10;
+            this.brain.score -= 10;
+        }
+        if(this.y === 0 || this.y === windowHeight) {
+            this.yVelocity = -this.yVelocity;
+            this.health -= 10;
+            this.brain.score -= 10;
+        }
 
         // Calculate opacity byte depending on health
         this.opacity = (this.health * 255) / 1000;
 
         // Try to eat food, and loose health over time if not fed
-        this.health -= 1;
-        this.eat();
+        this.health -= 1 + createVector(this.xVelocity, this.yVelocity).mag() / 4;
+        //if (output[2] < 0.5)
+            this.eat();
 
 
         this.draw();
@@ -82,7 +90,7 @@ class Entity {
             acc.push(normalize(cur.x, windowWidth));
             acc.push(normalize(cur.y, windowHeight));
             acc.push(angleToPoint(this.x, this.y, cur.x, cur.y) / (Math.PI * 2));
-            acc.push(normalize(cur.amount - Food.getMinMount(), Food.getMaxMount()));
+            acc.push(normalize(cur.amount - Food.getMinAmount(), Food.getMaxAmount()));
             return acc;
         }, []);
 
@@ -91,6 +99,10 @@ class Entity {
         inputs[2] = normalize(this.y, windowHeight);
         inputs[3] = normalize(this.xVelocity, this.maxSpeed);
         inputs[4] = normalize(this.yVelocity, this.maxSpeed);
+        inputs[5] = +(this.x < this.smellDistance);
+        inputs[6] = +(this.y < this.smellDistance);
+        inputs[7] = +(this.x > windowWidth - this.smellDistance);
+        inputs[8] = +(this.y > windowHeight - this.smellDistance);
 
         for (let i = 0; i < foodInputs.length; i++) {
             inputs[i+Entity.getStaticInputNumber()] = foodInputs[i];
@@ -100,6 +112,7 @@ class Entity {
     }
 
     eat() {
+        this.health -= 1;
         this.detectedFood.forEach(df => {
             if(collideCircleCircle(df.x,df.y,df.radius, this.x, this.y, this.size)) {
                 this.health += df.amount;
@@ -158,7 +171,7 @@ class Entity {
     }
 
     static getStaticInputNumber() {
-       return 5;
+       return 9;
     }
 
     // For zero padding

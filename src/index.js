@@ -1,7 +1,7 @@
 let entities;
 let neat;
 let foodStock = [];
-let foodAmount = 60;
+let foodAmount = Food.stock();
 
 function setup() {
     createCanvas(windowWidth, windowHeight).parent('field');
@@ -25,20 +25,15 @@ function setup() {
                 neataptic.methods.mutation.ADD_BACK_CONN,
                 neataptic.methods.mutation.SUB_BACK_CONN
             ],
-            popsize: 15,
+            popsize: 10,
             mutationRate: 0.3,
-            elitism: 4,
-            network: new neataptic.architect.Random(
-                Entity.getInputNumber(),
-                10,
-                2
-            )
+            elitism: 1,
+            network: new neataptic.architect.Perceptron(Entity.getInputNumber(),
+                3, 5, 3,
+                2)
         }
     );
-
-    for (let i = 0; i< foodAmount; i++) {
-        foodStock.push(new Food())
-    }
+    resetFood();
     entities = neat.population.map((brain, i) => new Entity(brain, i));
     drawGraph(entities[0].brain.graph(300, 500), '.draw');
 }
@@ -51,6 +46,8 @@ function draw(){
     $("#alive").text(`Alive ${aliveEntities.length}`)
 
     if (!aliveEntities.length) {
+
+        resetFood();
 
         neat.sort();
         const newPopulation = [];
@@ -83,6 +80,13 @@ function draw(){
     }
 
 }
+
+const resetFood = () => {
+    foodStock = [];
+    for (let i = 0; i< foodAmount; i++) {
+        foodStock.push(new Food())
+    }
+};
 
 const calculateDistance = (a, b) => int(dist(a.x, a.y, b.x, b.y));
 const detectCloseFood = (entity) => foodStock.filter(food => calculateDistance(entity, food) <= entity.smellDistance);

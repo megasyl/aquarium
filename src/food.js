@@ -3,7 +3,7 @@ class Food {
         this.x = random(0, windowWidth);
         this.y = random(0, windowHeight);
 
-        this.amount = random(Food.getMinMount(), Food.getMaxMount());
+        this.amount = random(Food.getMinAmount(), Food.getMaxAmount());
         this.radius = this.amount / 10;
     }
 
@@ -17,11 +17,15 @@ class Food {
         pop();
     }
 
-    static getMaxMount() {
-        return 25;
+    static getMaxAmount() {
+        return 150;
     }
 
-    static getMinMount() {
-        return 25;
+    static getMinAmount() {
+        return 50;
+    }
+
+    static stock() {
+        return 15;
     }
 }
