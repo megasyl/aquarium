@@ -1,7 +1,7 @@
 # Aquarium
 
 Aquarium is a personnal project I made for fun to learn about neural networks and genetic algorithms.
-It uses [Neaptic](https://wagenaartje.github.io/neataptic/) and [p5.js](https://p5js.org/)
+It uses [Neataptic](https://wagenaartje.github.io/neataptic/) and [p5.js](https://p5js.org/)
 
 ## Objective
 

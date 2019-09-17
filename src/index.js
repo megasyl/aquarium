@@ -40,7 +40,7 @@ function setup() {
         foodStock.push(new Food())
     }
     entities = neat.population.map((brain, i) => new Entity(brain, i));
-    drawGraph(entities[0].brain.graph(300, 300), '.draw');
+    drawGraph(entities[0].brain.graph(300, 500), '.draw');
 }
 
 function draw(){
@@ -75,7 +75,7 @@ function draw(){
         neat.generation++;
         $("#generation").text(`Generation ${neat.generation +1}`)
 
-        drawGraph(entities[0].brain.graph(300, 300), '.draw');
+        drawGraph(entities[0].brain.graph(300, 500), '.draw');
     } else {
         aliveEntities.forEach(entity => {
             entity.update();
