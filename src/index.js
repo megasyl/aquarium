@@ -1,4 +1,8 @@
-let entities;
+
+
+
+
+/*let entities;
 let neat;
 let foodStock = [];
 let foodAmount = Food.stock();
@@ -91,7 +95,6 @@ const resetFood = () => {
 const calculateDistance = (a, b) => int(dist(a.x, a.y, b.x, b.y));
 const detectCloseFood = (entity) => foodStock.filter(food => calculateDistance(entity, food) <= entity.smellDistance);
 
-/** Get the angle from one point to another */
 const angleToPoint = (x1, y1, x2, y2) => {
     const d = dist(x1, y1, x2, y2);
     const dx = (x2-x1) / d;
@@ -102,4 +105,4 @@ const angleToPoint = (x1, y1, x2, y2) => {
     return a;
 };
 
-const random = (min, max) => Math.floor(Math.random() * max) + min;
+const random = (min, max) => Math.floor(Math.random() * max) + min;*/

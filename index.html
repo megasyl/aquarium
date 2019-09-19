@@ -7,14 +7,21 @@
     <script src="lib/js/graph.js"></script>
     <script src="lib/js/jquery.min.js"></script>
     <script src="lib/js/bootstrap.min.js"></script>
+    <script src="lib/js/chroma.min.js"></script>
 
     <script src="lib/js/p5.min.js"></script>
     <script src="lib/js/p5.dom.min.js"></script>
     <script src="lib/js/p5.collide2d.min.js"></script>
 
-    <script src="src/entity.js"></script>
-    <script src="src/food.js"></script>
-    <script src="src/index.js"></script>
+    <script src="src/rules/index.js"></script>
+    <script src="src/utils/color.js"></script>
+    <script src="src/utils/math.js"></script>
+    <script src="src/entity/brain.js"></script>
+    <script src="src/entity/genome.js"></script>
+    <script src="src/entity/egg.js"></script>
+    <script src="src/entity/index.js"></script>
+    <script src="src/world/index.js"></script>
+    <script src="src/p5/index.js"></script>
 
     <link rel="stylesheet" type="text/css" href="lib/css/graph.css">
     <link rel="stylesheet" type="text/css" href="lib/css/bootstrap.min.css">
@@ -23,8 +30,9 @@
     <div>
         <div class="col-md-3 col-lg-3" style="color: #fff; padding-top: 10px" >
 
-            <p id="generation">Generation 0</p>
-            <p id="alive">Alive 0</p>
+            <p id="generation">Population 0</p>
+            <p id="alive">Food 0</p>
+            <p id="elapsedTime">Time 0</p>
         </div>
         <div class="col-md-5 col-lg-5">
             <svg class="draw" width="100%" height="100%"/>

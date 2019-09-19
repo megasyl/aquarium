@@ -6,7 +6,6 @@ class Entity {
         this.yVelocity = 0;
         this.xAcceleration = 0;
         this.yAcceleration = 0;
-        this.maxSpeed = 10;
         this.angle = 0;
 
         this.maxHealth = 1000;
