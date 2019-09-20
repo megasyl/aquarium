@@ -4,15 +4,17 @@ let graphDrawSwitch;
 function setup() {
     createCanvas(windowWidth, windowHeight).parent('field');
     world = new World({
-        population: 1
+        population: 15
     });
-    console.log(world)
 }
 
 function draw() {
     clear();
     world.population.forEach(entity => entity.update());
+    world.food.forEach(food => food.update());
     world.eggs.forEach(entity => entity.update());
+    $('#population').val('Population :' + world.population.length);
+
 
     if (selected) {
         selected.drawUI();

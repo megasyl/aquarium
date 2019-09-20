@@ -1,6 +1,5 @@
 class Entity {
     constructor(parent, x, y) {
-        console.log('p', parent)
         this.genome = new Genome(parent);
         this.brain = Brain(parent);
 
@@ -17,6 +16,8 @@ class Entity {
         this.brainActivityClock = 0;
         this.waste = 0;
 
+        this.closeFood = [];
+
         this.output = {
             angle: 0,
             velocityFactor: 0,
@@ -29,10 +30,12 @@ class Entity {
 
     update() {
         if (this.health <= 0 || this.lifeTime >= this.genome.maxLifeTime) {
+            delete this;
             return world.kill(world.population.indexOf(this));
         }
 
         const input = this.getInput();
+        //console.log(input)
         const output = this.brain.activate(input);
         this.setOutput(output);
 
@@ -72,9 +75,13 @@ class Entity {
 
         this.lifeTime += 1;
         this.brainActivityClock += 1;
-        if (this.output.wantToLay && this.health >= this.genome.minHealth) {
-            this.layEgg();
+        const price = this.genome.minHealth * (rules.EGG_LAYING_HEALTH_PRICE_PERCENTAGE / 100);
+        if (this.output.wantToLay && this.health >= price && this.lifeTime >= this.genome.maxLifeTime * 0.2) {
+            this.layEgg(price);
+
         }
+        this.eat();
+        this.health -= 1/60;
         this.draw();
     }
 
@@ -84,6 +91,10 @@ class Entity {
             this.brainActivityClock = 0;
         }
 
+        this.detectCloseFood();
+        this.detectClosestFood();
+        const angle = this.calculateAngleToClosestFood();
+        const distance = this.calculateDistanceToClosestFood();
         const speed = vectorMagnitude(this.xVelocity, this.yVelocity) || 0;
         //get the inputs !
         return [
@@ -92,7 +103,10 @@ class Entity {
             this.lifeTime / this.genome.maxLifeTime,
             this.genome.constant,
             speed,
-            this.health
+            this.health,
+            this.closeFood.length,
+            angle,
+            distance
         ];
     }
 
@@ -105,22 +119,48 @@ class Entity {
 
     }
 
-    eat() {
-        this.health -= 1;
-        this.detectedFood.forEach(df => {
-            if(collideCircleCircle(df.x,df.y,df.radius, this.x, this.y, this.size)) {
-                this.health += df.amount;
-                this.brain.score += 10 + 2 * df.amount;
-                foodStock.splice(foodStock.indexOf(df), 1);
-                foodStock.push(new Food());
-            }
-        });
+    detectCloseFood() {
+        this.closeFood = world.food.map(food => ({
+            food: food,
+            distance: calculateDistance(this, food)
+        })).filter(foodDescriptor => foodDescriptor.distance <= this.genome.smellDistance);
     }
 
-    layEgg() {
-        const price = this.health * (rules.EGG_LAYING_HEALTH_PRICE_PERCENTAGE / 100)
+    detectClosestFood() {
+        this.closestFood = this.closeFood.length ?
+            this.closeFood.reduce((min, foodDescriptor) =>
+                foodDescriptor.distance < min ? foodDescriptor.food : min, this.closeFood[0].food)
+            : null;
+    }
+
+    calculateAngleToClosestFood() {
+        if (this.closestFood)
+        //console.log( angleToPoint(this.x, this.y, this.closestFood.x, this.closestFood.y))
+        return this.closestFood ? angleToPoint(this.x, this.y, this.closestFood.x, this.closestFood.y) / (2 * Math.PI) : 1;
+    }
+
+    calculateDistanceToClosestFood() {
+        //console.log(this.x, this.y, "bitch")
+        return this.closestFood ? calculateDistance(this, this.closestFood) / this.genome.smellDistance : 1;
+    }
+
+    eat() {
+        if (this.closestFood) {
+            const hit = collideCircleCircle(this.closestFood.x, this.closestFood.y, this.closestFood.radius, this.x, this.y, this.genome.size);
+            if (hit) {
+                console.log("EATING !", this.closestFood)
+                this.health += this.closestFood.amount;
+                world.food.splice(world.food.indexOf(this.closestFood), 1);
+                world.food.push(new Food())
+            }
+        }
+    }
+
+    layEgg(price) {
+        console.log("eggley", price, this.health)
         world.eggs.push(new Egg(this, price));
-        this.health -= price
+        this.health = this.health - price;
+        console.log("eggley", price, this.health)
     }
 
     draw() {
@@ -156,6 +196,7 @@ class Entity {
         push();
         translate(0, 0);
 
+        //console.log(this.lifeTime >= this.genome.maxLifeTime * 0.1, this.output.wantToLay, this.health, this.genome.minHealth)
         //this.detectedFood.forEach(df =>line(this.x,this.y, df.x,df.y));
         pop()
 

@@ -3,8 +3,12 @@ class Food {
         this.x = random(0, windowWidth);
         this.y = random(0, windowHeight);
 
-        this.amount = amount;
+        this.amount = amount || 20;
         this.radius = this.amount / 10;
+    }
+
+    update() {
+        this.draw();
     }
 
     draw() {

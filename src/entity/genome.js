@@ -11,7 +11,7 @@ class Genome {
         this.brainActivityFrequency = parent.brainActivityFrequency || rules.INITIAL_BRAIN_ACTIVITY_FREQUENCY;
         this.maxChrono = parent.maxChrono || rules.INITIAL_MAX_CHRONO;
         this.maxLifeTime = parent.maxLifeTime || rules.INITIAL_MAX_LIFETIME;
-        this.color = getColor()
+        this.color = parent.genome ? parent.genome.color : getColor()
 
         this.mutate()
     }

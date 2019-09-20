@@ -1,16 +1,30 @@
 class World {
     constructor(config = {}) {
         this.population = [];
-        for (let i = 0; i < 1; i++) {
-            this.population.push(new Entity())
-        }
+        this.food = [];
         this.eggs = [];
+
+        const a = config.population ? config.population : rules.POPULATION_SIZE;
+        for (let i = 0; i < a; i++) {
+            this.population.push(new Entity());
+        }
+        for (let i = 0; i < 1500; i++) {
+            this.food.push(new Food());
+        }
+
+        this.maxDist = Math.sqrt(Math.pow(windowWidth, 2), Math.pow(windowHeight, 2));
+
         this.totalEnergy = config.totalEnergy || rules.TOTAL_ENERGY_AMOUNT;
+    }
+
+    digest(food) {
+        this.food.splice(food, 1);
+        this.food.push(new Food());
+        // this.totalEnergy += entity.waste;
     }
 
     kill(entity) {
         this.population.splice(entity, 1);
-        console.log(entity)
        // this.totalEnergy += entity.waste;
     }
 

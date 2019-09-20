@@ -7,19 +7,16 @@ class Egg {
         this.waste = price;
         this.lifeTime = 0;
         this.parent = parent;
-
-        this.id = random(0, 100000000);
     }
 
     update() {
-        console.log(this.lifeTime)
         if (this.lifeTime >= rules.EGG_HATCHING_TIME) {
-            world.hatch(this);
-            console.log(world.eggs.indexOf(this))
+            world.hatch(world.eggs.indexOf(this));
             world.population.push(new Entity(this.parent, this.x, this.y));
+        } else {
+            this.lifeTime++;
+            this.draw();
         }
-        this.lifeTime++;
-        this.draw();
     }
 
     draw() {
@@ -30,7 +27,7 @@ class Egg {
         stroke(200, 255);
         strokeWeight(2);
         fill(127, 255);
-        ellipse(0, 0, this.parent.genome.size / 4, this.parent.genome.size / 2);
+        ellipse(0, 0, this.parent.genome.size / 3, this.parent.genome.size / 2);
 
         pop();
     }
