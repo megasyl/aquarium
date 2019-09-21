@@ -11,9 +11,12 @@ class Genome {
         this.brainActivityFrequency = parent.brainActivityFrequency || rules.INITIAL_BRAIN_ACTIVITY_FREQUENCY;
         this.maxChrono = parent.maxChrono || rules.INITIAL_MAX_CHRONO;
         this.maxLifeTime = parent.maxLifeTime || rules.INITIAL_MAX_LIFETIME;
-        this.color = parent.genome ? parent.genome.color : getColor(world.population.length / 5)
+        this.color = parent.genome ? parent.genome.color : getColor(this.constant)
 
-        this.mutate()
+        for (let i = 0; i < rules.GENOME_INITIAL_MUTATION_NUMBER; i++) {
+            this.mutate()
+        }
+
     }
 
     mutate() {
@@ -29,7 +32,6 @@ class Genome {
 
     mutateAttributeByPercentage(attribute, percentage) {
         const range = this[attribute] * (percentage / 100);
-        //console.log(attribute, this[attribute], min, max, randomFloat(min, max))
         this[attribute] += randomFloatWithNegativeRange(range);
     }
 }

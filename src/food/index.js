@@ -1,7 +1,7 @@
 class Food {
-    constructor(amount) {
-        this.x = random(0, windowWidth);
-        this.y = random(0, windowHeight);
+    constructor(x, y, amount) {
+        this.x = x || random(0, windowWidth);
+        this.y = y || random(0, windowHeight);
 
         this.amount = amount || 20;
         this.radius = this.amount / 10;

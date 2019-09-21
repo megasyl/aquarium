@@ -12,6 +12,14 @@ const angleToPoint = (x1, y1, x2, y2) => {
     a = dy < 0 ? 2 * Math.PI - a : a;
     return a;
 };
+const randPositionInCircle = (originX, originY, size) => {
+    const a = Math.random() * 2 * Math.PI;
+    const r = size * Math.sqrt(Math.random());
+    return {
+        x: originX + (r * Math.cos(a)),
+        y: originY + (r * Math.sin(a))
+    }
+};
 
 
 

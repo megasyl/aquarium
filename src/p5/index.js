@@ -4,7 +4,7 @@ let graphDrawSwitch;
 function setup() {
     createCanvas(windowWidth, windowHeight).parent('field');
     world = new World({
-        population: 5
+        population: 30
     });
     world.init();
 }
@@ -18,11 +18,18 @@ function draw() {
     $('#population').text('Population : ' + world.population.length);
     $('#food').text('Food : ' + world.food.length);
 
-
     if (selected) {
+        $('#entityTitle').val('Entity');
         selected.drawUI();
         if (!graphDrawSwitch)
             drawGraph(selected.brain.graph(300, 500), '.draw');
+        graphDrawSwitch = true;
+
+    } else {
+        selected = null;
+        $('#entityTitle').text('Entity');
+        if (!graphDrawSwitch)
+            $('.entityTitle').html('');
         graphDrawSwitch = true;
     }
 }

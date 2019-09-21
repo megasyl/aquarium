@@ -33,8 +33,14 @@ class Entity {
 
     update() {
         if (this.health <= 0) {
-            delete this;
-            return world.kill(world.population.indexOf(this));
+            world.kill(world.population.indexOf(this));
+            let foodToSpawn = (this.waste + this.health) / 20;
+            console.log('Adding: ', Math.round(foodToSpawn), 'to', world.food.length)
+            for (let i = 0; i < Math.round(foodToSpawn); i++) {
+                const position = randPositionInCircle(this.x, this.y, this.genome.size * 2);
+                world.food.push(new Food(position.x, position.y))
+            }
+            return;
         }
 
         const input = this.getInput();
@@ -77,9 +83,7 @@ class Entity {
         }*/
         //console.log(Math.floor(this.x), Math.floor(this.y))
         if (this.x > windowWidth) {
-            console.log('right !!!', this.x)
             this.x = 0;
-            console.log('right !!!', this.x, windowWidth)
         } else if (this.x < 0) {
             this.x = windowWidth;
         }
@@ -93,14 +97,17 @@ class Entity {
 
         this.lifeTime += 1;
         this.brainActivityClock += 1;
-        const price = this.genome.minHealth * (rules.EGG_LAYING_HEALTH_PRICE_PERCENTAGE / 100);
+        const price = this.genome.minHealth //* (rules.EGG_LAYING_HEALTH_PRICE_PERCENTAGE / 100);
+        this.eat();
         if (this.output.wantToLay && this.health >= price && this.lifeTime >= this.genome.maxLifeTime * 0.2) {
             this.layEgg(price);
 
         }
-        this.eat();
-        this.health -= 1/120;
-        this.health -= (vectorMagnitude(this.xVelocity, this.yVelocity) * this.genome.size /10) / 240
+
+        const consumption = 1/120 + (1/240 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size)));
+        //console.log(consumption)
+        this.health -= consumption;
+        this.waste += consumption;
         this.draw();
     }
 
@@ -171,9 +178,10 @@ class Entity {
             if (hit) {
                 //console.log("EATING !", food)
                 this.health += food.amount;
+                //this.waste += food.amount;
                 //world.food.indexOf(world.food.find(f => this.closestFood.x === f.x && this.closestFood.y === f.y))
                 world.food.splice(world.food.indexOf(food), 1);
-                world.food.push(new Food())
+                //world.food.push(new Food())
             }
         })
 
@@ -182,7 +190,8 @@ class Entity {
     layEgg(price) {
         //console.log("eggley", price, this.health)
         world.eggs.push(new Egg(this, price));
-        this.health = this.health - price;
+        this.health -= price;
+        //this.waste += price;
         //console.log("eggley", price, this.health)
         this.children += 1;
     }
@@ -225,6 +234,7 @@ class Entity {
         pop()
 
         $('#health').text('Health : ' + this.health);
+        $('#waste').text('Waste : ' + this.waste);
         $('#generation').text('Generation : ' + this.generation);
         const duration = moment.duration(this.lifeTimeInSeconds, 'seconds');
         const formatted = duration.format("hh:mm:ss");

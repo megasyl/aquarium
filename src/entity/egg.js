@@ -4,7 +4,6 @@ class Egg {
         this.x = parent.x;
         this.y = parent.y;
 
-        this.waste = price;
         this.lifeTime = 0;
         this.parent = parent;
     }
