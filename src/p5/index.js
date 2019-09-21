@@ -4,7 +4,7 @@ let graphDrawSwitch;
 function setup() {
     createCanvas(windowWidth, windowHeight).parent('field');
     world = new World({
-        population: 15
+        population: 5
     });
 }
 

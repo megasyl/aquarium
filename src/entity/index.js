@@ -62,16 +62,25 @@ class Entity {
         this.y += this.yVelocity;
 
         // Limit position to width and height
-        this.x = this.x >= windowWidth  ? windowWidth  : this.x <= 0 ? 0 : this.x;
-        this.y = this.y >= windowHeight ? windowHeight : this.y <= 0 ? 0 : this.y;
+        //this.x = this.x >= windowWidth  ? windowWidth  : this.x <= 0 ? 0 : this.x;
+        //this.y = this.y >= windowHeight ? windowHeight : this.y <= 0 ? 0 : this.y;
 
         // Calculate rebound
-        if(this.x === 0 || this.x === windowWidth) {
+        /*if(this.x === 0 || this.x === windowWidth) {
             this.xVelocity = -this.xVelocity;
         }
         if(this.y === 0 || this.y === windowHeight) {
             this.yVelocity = -this.yVelocity;
-        }
+        }*/
+        //console.log(Math.floor(this.x), Math.floor(this.y))
+        if (Math.floor(this.x) >= windowWidth)
+            this.x = 0;
+        if (Math.floor(this.y) >= windowHeight)
+            this.y = 0;
+        if (Math.floor(this.y) <= 0)
+            this.y = windowHeight;
+        if (Math.floor(this.x) <= 0)
+            this.x = windowWidth;
 
         this.lifeTime += 1;
         this.brainActivityClock += 1;
@@ -131,10 +140,11 @@ class Entity {
             this.closeFood.reduce((min, foodDescriptor) =>
                 foodDescriptor.distance < min ? foodDescriptor.food : min, this.closeFood[0].food)
             : null;
+        //console.log(this.closestFood)
     }
 
     calculateAngleToClosestFood() {
-        if (this.closestFood)
+        //if (this.closestFood)
         //console.log( angleToPoint(this.x, this.y, this.closestFood.x, this.closestFood.y))
         return this.closestFood ? angleToPoint(this.x, this.y, this.closestFood.x, this.closestFood.y) / (2 * Math.PI) : 1;
     }
@@ -145,22 +155,25 @@ class Entity {
     }
 
     eat() {
-        if (this.closestFood) {
-            const hit = collideCircleCircle(this.closestFood.x, this.closestFood.y, this.closestFood.radius, this.x, this.y, this.genome.size);
+         this.closeFood.forEach(({ food }) => {
+            console.log("-")
+            const hit = collideCircleCircle(food.x, food.y, food.radius, this.x, this.y, this.genome.size);
             if (hit) {
-                console.log("EATING !", this.closestFood)
-                this.health += this.closestFood.amount;
-                world.food.splice(world.food.indexOf(this.closestFood), 1);
+                //console.log("EATING !", food)
+                this.health += food.amount;
+                //world.food.indexOf(world.food.find(f => this.closestFood.x === f.x && this.closestFood.y === f.y))
+                world.food.splice(world.food.indexOf(food), 1);
                 world.food.push(new Food())
             }
-        }
+        })
+
     }
 
     layEgg(price) {
-        console.log("eggley", price, this.health)
+        //console.log("eggley", price, this.health)
         world.eggs.push(new Egg(this, price));
         this.health = this.health - price;
-        console.log("eggley", price, this.health)
+        //console.log("eggley", price, this.health)
     }
 
     draw() {

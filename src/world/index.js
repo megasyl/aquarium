@@ -8,7 +8,7 @@ class World {
         for (let i = 0; i < a; i++) {
             this.population.push(new Entity());
         }
-        for (let i = 0; i < 1500; i++) {
+        for (let i = 0; i < 150; i++) {
             this.food.push(new Food());
         }
 
