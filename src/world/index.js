@@ -3,18 +3,34 @@ class World {
         this.population = [];
         this.food = [];
         this.eggs = [];
+        this.elapsedTime = 0;
+        this.config = config;
 
-        const a = config.population ? config.population : rules.POPULATION_SIZE;
+        setInterval(this.countTime.bind(this), 1000);
+    }
+
+
+    countTime(){
+        this.elapsedTime ++;
+        const duration = moment.duration(this.elapsedTime, 'seconds');
+        const formatted = duration.format("hh:mm:ss");
+
+        this.population.forEach(entity => {
+            entity.lifeTimeInSeconds++;
+        });
+        $('#elapsedTime').text("Time : " + formatted);
+    }
+
+    init() {
+        const a = this.config.population ? this.config.population : rules.POPULATION_SIZE;
         for (let i = 0; i < a; i++) {
             this.population.push(new Entity());
         }
-        for (let i = 0; i < 150; i++) {
+        for (let i = 0; i < 250; i++) {
             this.food.push(new Food());
         }
 
-        this.maxDist = Math.sqrt(Math.pow(windowWidth, 2), Math.pow(windowHeight, 2));
-
-        this.totalEnergy = config.totalEnergy || rules.TOTAL_ENERGY_AMOUNT;
+        this.totalEnergy = this.config.totalEnergy || rules.TOTAL_ENERGY_AMOUNT;
     }
 
     digest(food) {

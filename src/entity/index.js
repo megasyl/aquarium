@@ -15,7 +15,6 @@ class Entity {
         this.lifeTime = 0;
         this.brainActivityClock = 0;
         this.waste = 0;
-
         this.closeFood = [];
 
         this.output = {
@@ -26,10 +25,14 @@ class Entity {
             resetChrono: false
         };
 
+        this.lifeTimeInSeconds = 0;
+        this.children = 0;
+        this.generation = parent ? parent.generation + 1 : 1;
+
     }
 
     update() {
-        if (this.health <= 0 || this.lifeTime >= this.genome.maxLifeTime) {
+        if (this.health <= 0) {
             delete this;
             return world.kill(world.population.indexOf(this));
         }
@@ -73,14 +76,20 @@ class Entity {
             this.yVelocity = -this.yVelocity;
         }*/
         //console.log(Math.floor(this.x), Math.floor(this.y))
-        if (Math.floor(this.x) >= windowWidth)
+        if (this.x > windowWidth) {
+            console.log('right !!!', this.x)
             this.x = 0;
-        if (Math.floor(this.y) >= windowHeight)
-            this.y = 0;
-        if (Math.floor(this.y) <= 0)
-            this.y = windowHeight;
-        if (Math.floor(this.x) <= 0)
+            console.log('right !!!', this.x, windowWidth)
+        } else if (this.x < 0) {
             this.x = windowWidth;
+        }
+
+        if (this.y > windowHeight) {
+            this.y = 0;
+        } else if (this.y < 0) {
+            this.y = windowHeight;
+        }
+
 
         this.lifeTime += 1;
         this.brainActivityClock += 1;
@@ -90,7 +99,8 @@ class Entity {
 
         }
         this.eat();
-        this.health -= 1/60;
+        this.health -= 1/120;
+        this.health -= (vectorMagnitude(this.xVelocity, this.yVelocity) * this.genome.size /10) / 240
         this.draw();
     }
 
@@ -107,12 +117,13 @@ class Entity {
         const speed = vectorMagnitude(this.xVelocity, this.yVelocity) || 0;
         //get the inputs !
         return [
+            this.genome.constant,
             +brainActivation,
             this.chrono / this.genome.maxChrono,
-            this.lifeTime / this.genome.maxLifeTime,
-            this.genome.constant,
-            speed,
             this.health,
+            this.lifeTime,
+            this.children,
+            speed,
             this.closeFood.length,
             angle,
             distance
@@ -156,7 +167,6 @@ class Entity {
 
     eat() {
          this.closeFood.forEach(({ food }) => {
-            console.log("-")
             const hit = collideCircleCircle(food.x, food.y, food.radius, this.x, this.y, this.genome.size);
             if (hit) {
                 //console.log("EATING !", food)
@@ -174,6 +184,7 @@ class Entity {
         world.eggs.push(new Egg(this, price));
         this.health = this.health - price;
         //console.log("eggley", price, this.health)
+        this.children += 1;
     }
 
     draw() {
@@ -213,6 +224,12 @@ class Entity {
         //this.detectedFood.forEach(df =>line(this.x,this.y, df.x,df.y));
         pop()
 
+        $('#health').text('Health : ' + this.health);
+        $('#generation').text('Generation : ' + this.generation);
+        const duration = moment.duration(this.lifeTimeInSeconds, 'seconds');
+        const formatted = duration.format("hh:mm:ss");
+        $('#lifeTime').text('LifeTime : ' + formatted);
+        $('#children').text('Children : ' + this.children);
 
     }
 }

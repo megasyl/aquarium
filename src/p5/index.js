@@ -6,14 +6,17 @@ function setup() {
     world = new World({
         population: 5
     });
+    world.init();
 }
+
 
 function draw() {
     clear();
     world.population.forEach(entity => entity.update());
     world.food.forEach(food => food.update());
     world.eggs.forEach(entity => entity.update());
-    $('#population').val('Population :' + world.population.length);
+    $('#population').text('Population : ' + world.population.length);
+    $('#food').text('Food : ' + world.food.length);
 
 
     if (selected) {

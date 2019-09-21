@@ -1,6 +1,6 @@
-const DEFAULT_SCALE = chroma.scale('Spectral');
+const DEFAULT_SCALE = chroma.scale(['purple', 'blue', 'green', 'yellow', 'red']);
 
 
-const getColor = () => {
-    return DEFAULT_SCALE(Math.random()).hex()
+const getColor = (i) => {
+    return DEFAULT_SCALE(i/*Math.random()*/).hex()
 };

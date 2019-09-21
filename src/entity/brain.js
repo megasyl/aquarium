@@ -22,7 +22,13 @@ const Brain = (parent) => {
         brain.mutate(methods[random(0, methods.length)]);
     } else {
         // Init a simple perceptron brain
-        brain = new neataptic.Network(rules.INPUT_NUMBER, rules.OUTPUT_NUMBER)
+        brain = new neataptic.Network(rules.INPUT_NUMBER, rules.OUTPUT_NUMBER);
+
+        // Init networks with randomized mutations to allow initial diversity
+        for (let i = 0; i < rules.BRAIN_INITIAL_MUTATION_NUMBER; i++) {
+            brain.mutate(methods[random(0, methods.length)]);
+        }
+
     }
     return brain;
 };
