@@ -37,15 +37,16 @@ class Entity {
     update() {
         if (this.health <= 0) {
             world.kill(world.population.indexOf(this));
-            let foodToSpawn = (this.waste + this.health) / 20;
+            let foodToSpawn = (this.waste + this.health) / rules.INITIAL_FOOD_AMOUNT;
             for (let i = 0; i < Math.round(foodToSpawn); i++) {
                 const position = randPositionInCircle(this.x, this.y, this.genome.size * 4);
                 world.food.push(new Food(position.x, position.y))
             }
+            delete this;
             return;
         }
-
-        this.consumption = 1/240 + (1/240 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size)));
+        this.radius = this.genome.size / 2;
+        this.consumption = 1/45 + (1/180 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size))) + (this.waste / 2000);
         const input = this.getInput();
         //console.log(input)
         const output = this.brain.activate(input);
@@ -80,8 +81,9 @@ class Entity {
 
         if (rules.LIMIT_EDGES) {
             // Limit position to window width and height
-            this.x = this.x >= windowWidth  ? windowWidth  : this.x <= 0 ? 0 : this.x;
-            this.y = this.y >= windowHeight ? windowHeight : this.y <= 0 ? 0 : this.y;
+
+            this.x = this.x + this.radius >= windowWidth ? windowWidth - this.radius  : this.x - this.radius <= 0 ? 0 + this.radius : this.x;
+            this.y = this.y + this.radius >= windowHeight ? windowHeight - this.radius : this.y - this.radius <= 0 ? 0 + this.radius : this.y;
         } else {
             // Teleport entity to the opposite side
             if (this.x > windowWidth) {
@@ -107,9 +109,11 @@ class Entity {
         }
         this.headOfPike = rotatePointAroundOrigin({x: this.x + this.spikeLength, y: this.y}, {x: this.x, y: this.y}, this.velocityVector.heading());
         this.detectCollisionEntity();
-        if (this.touchedEntity) {
-            this.touchedEntity.health -= this.consumption * 100;
-            this.health += this.consumption * 100;
+        if (this.touchedEntity && this.spikeLength > this.genome.size / 2) {
+            const quantityToSteal = this.consumption * 100;
+            const stolenHealth = this.touchedEntity.health > quantityToSteal ? quantityToSteal : this.touchedEntity.health;
+            this.touchedEntity.health -= stolenHealth;
+            this.health += stolenHealth;
         }
 
         //console.log(this.consumption)
@@ -135,6 +139,7 @@ class Entity {
         const angleToHeadingOfEntity = this.calculateAngleToHeadingOfClosestEntity();
         const distanceToEntity = this.calculateDistanceToClosestEntity();
         const speed = vectorMagnitude(this.xVelocity, this.yVelocity) || 0;
+        const closestEntityConstantDifference = this.closestEntity ? Math.abs(this.closestEntity.genome.constant - this.genome.constant) : 0;
         //get the inputs !
         return [
             this.genome.constant,
@@ -150,22 +155,25 @@ class Entity {
             angleToFood,
             distanceToFood,
             angleToEntity,
+            closestEntityConstantDifference,
             angleToHeadingOfEntity,
             distanceToEntity,
             !!this.touchedEntity,
-            this.x / windowWidth,
-            this.y / windowHeight,
+            this.x - this.radius <= 0,
+            this.x + this.radius >= windowWidth,
+            this.y - this.radius <= 0,
+            this.y + this.radius >= windowHeight,
             this.genome.size
         ];
     }
 
     setOutput(output) {
         this.output.angle = (output[0]) * 2 * Math.PI;
-        this.output.velocityFactor = output[1] * this.genome.maxSpeed;
+        this.output.velocityFactor = output[1] * this.genome.maxSpeed / 10;
         //this.output.wantToEat = output[2] < 0.5;
         this.output.wantToLay = output[2] > 0.5;
         this.output.resetChrono = output[3] > 0.5;
-        this.output.spikeLength = 25 + ((output[4] % 1) * (35 -25))
+        this.output.spikeLength = this.genome.size /2 + ((output[4] % 1) * (35 -this.genome.size /2))
 
     }
 
@@ -178,8 +186,7 @@ class Entity {
 
     detectClosestFood() {
         this.closestFood = this.closeFood.length ?
-            this.closeFood.reduce((min, foodDescriptor) =>
-                foodDescriptor.distance < min ? foodDescriptor.food : min, this.closeFood[0].food)
+            this.closeFood.reduce((min, foodDescriptor) => foodDescriptor.distance < min.distance ? foodDescriptor : min, this.closeFood[0]).food
             : null;
     }
 
@@ -199,9 +206,9 @@ class Entity {
     }
 
     detectClosestEntity() {
+
         this.closestEntity = this.closeEntities.length ?
-            this.closeEntities.reduce((min, entityDescriptor) =>
-                entityDescriptor.distance < min ? entityDescriptor.entity : min, this.closeEntities[0].entity)
+            this.closeEntities.reduce((min, entityDescriptor) => entityDescriptor.distance < min.distance ? entityDescriptor : min, this.closeEntities[0]).entity
             : null;
     }
 
@@ -267,22 +274,30 @@ class Entity {
     }
 
     drawUI() {
+        if (this.health <= 0)
+            return;
         push();
         translate(this.x, this.y);
 
         // Draw the smell area
         stroke(200, 255);
         strokeWeight(0.5);
-        fill(127, 0);
-        ellipse(0, 0, this.genome.smellDistance * 2, this.genome.smellDistance * 2);
+
+        fill(255, 0, 0, 5);
+        ellipse(0,0, this.genome.soundDistance * 2, this.genome.soundDistance * 2);
+        fill(0, 255, 0, 10);
+        ellipse(0,0, this.genome.smellDistance * 2, this.genome.smellDistance * 2);
 
         pop();
 
         push();
         translate(0, 0);
-
-        //console.log(this.lifeTime >= this.genome.maxLifeTime * 0.1, this.output.wantToLay, this.health, this.genome.minHealth)
-        //this.detectedFood.forEach(df =>line(this.x,this.y, df.x,df.y));
+        stroke('green');
+        if (this.closestFood)
+            line(this.x,this.y,this.closestFood.x,this.closestFood.y);
+        stroke('red');
+        if (this.closestEntity)
+            line(this.x,this.y,this.closestEntity.x,this.closestEntity.y);
         pop()
 
         $('#health').text('Health : ' + this.health);

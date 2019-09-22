@@ -26,7 +26,7 @@ class World {
         for (let i = 0; i < a; i++) {
             this.population.push(new Entity());
         }
-        for (let i = 0; i < rules.INITIAL_FOOD_AMOUND; i++) {
+        for (let i = 0; i < rules.INITIAL_FOOD_COUNT; i++) {
             this.food.push(new Food());
         }
 

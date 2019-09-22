@@ -27,13 +27,16 @@ function draw() {
         selected = null;
         $('#entityTitle').text('Entity');
         if (!graphDrawSwitch)
-            $('.entityTitle').html('');
+            $('.draw').html('');
         graphDrawSwitch = true;
     }
 }
 
 function mouseClicked() {
     selected = world.population.find(entity => collidePointCircle(mouseX, mouseY, entity.x, entity.y, entity.genome.size));
+    if (!selected && rules.ALLOW_ENTITY_SPAWNING) {
+        world.population.push(new Entity(undefined, mouseX, mouseY))
+    }
     graphDrawSwitch = false
 }
 

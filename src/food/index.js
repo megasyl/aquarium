@@ -3,7 +3,7 @@ class Food {
         this.x = x || random(0, windowWidth);
         this.y = y || random(0, windowHeight);
 
-        this.amount = amount || 20;
+        this.amount = amount || rules.INITIAL_FOOD_AMOUNT;
         this.radius = this.amount / 10;
     }
 
