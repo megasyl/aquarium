@@ -173,7 +173,7 @@ class Entity {
         //this.output.wantToEat = output[2] < 0.5;
         this.output.wantToLay = output[2] > 0.5;
         this.output.resetChrono = output[3] > 0.5;
-        this.output.spikeLength = this.genome.size /2 + ((output[4] % 1) * (35 -this.genome.size /2))
+        this.output.spikeLength = this.genome.size /2 + ((output[4] % 1) * (25 - this.genome.size /2))
 
     }
 
