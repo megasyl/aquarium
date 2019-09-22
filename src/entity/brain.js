@@ -19,10 +19,12 @@ const Brain = (parent) => {
         // Always mutate child brains !
         brain = neataptic.Network.crossOver(parent.brain, parent.brain);
         // Allow all mutation methods on the brain
-        brain.mutate(methods[random(0, methods.length)]);
+        if (Math.random() < rules.BRAIN_MUTATION_RATE)
+            brain.mutate(methods[random(0, methods.length)]);
     } else {
         // Init a simple perceptron brain
-        brain = new neataptic.Network(rules.INPUT_NUMBER, rules.OUTPUT_NUMBER);
+        //brain = new neataptic.Network(rules.INPUT_NUMBER, rules.OUTPUT_NUMBER);
+        brain = new neataptic.architect.Perceptron(rules.INPUT_NUMBER, random(6, 12), rules.OUTPUT_NUMBER);
 
         // Init networks with randomized mutations to allow initial diversity
         for (let i = 0; i < rules.BRAIN_INITIAL_MUTATION_NUMBER; i++) {

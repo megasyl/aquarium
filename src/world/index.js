@@ -22,11 +22,11 @@ class World {
     }
 
     init() {
-        const a = this.config.population ? this.config.population : rules.POPULATION_SIZE;
+        const a = this.config.population ? this.config.population : rules.INITIAL_POPULATION_SIZE;
         for (let i = 0; i < a; i++) {
             this.population.push(new Entity());
         }
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < rules.INITIAL_FOOD_AMOUND; i++) {
             this.food.push(new Food());
         }
 
