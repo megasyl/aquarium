@@ -3,6 +3,7 @@
     <script src="lib/js/d3.v3.min.js"></script>
     <script src="lib/js/webcola.min.js"></script>
 
+    <script src="lib/js/chart.min.js"></script>
     <script src="lib/js/neataptic.js"></script>
     <script src="lib/js/graph.js"></script>
     <script src="lib/js/jquery.min.js"></script>
@@ -28,15 +29,21 @@
 
     <link rel="stylesheet" type="text/css" href="lib/css/graph.css">
     <link rel="stylesheet" type="text/css" href="lib/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/css/chart.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/css/index.css">
 </head>
 <body style="background-color: #1b1e21">
+    <div id="field" style="position: absolute; top: 0px;" width="100%" height="100%"></div>
+    <canvas id="stats" style="position: absolute;"></canvas>
     <div style="height: 100%">
+
         <div class="col-md-3 col-lg-3" style="color: #fff; padding-top: 10px" >
 
             <h3>World</h3>
             <p id="population">Population 0</p>
             <p id="food">Food 0</p>
             <p id="elapsedTime">Time 0</p>
+            <button type="button" class="btn btn-primary-outline" style="color: white" onclick="world.showGraph()">Graph</button>
         </div>
         <div class="col-md-3 col-lg-3" style="color: #fff; padding-top: 10px" >
             <h3 id="#entityTitle">Entity (click on one)</h3>
@@ -50,6 +57,5 @@
             <svg class="draw" style="height: 100%; width: 100%"/>
         </div>
     </div>
-    <div id="field" style="position: absolute; top: 0px;" width="100%" height="100%"></div>
 </body>
 </html>

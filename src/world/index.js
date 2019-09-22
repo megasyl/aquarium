@@ -6,19 +6,66 @@ class World {
         this.elapsedTime = 0;
         this.config = config;
 
+        this.stats = {
+            display: false,
+            chart: this.initGraph()
+        };
+
+        $("#stats").hide();
+
         setInterval(this.countTime.bind(this), 1000);
     }
 
 
     countTime(){
-        this.elapsedTime ++;
         const duration = moment.duration(this.elapsedTime, 'seconds');
         const formatted = duration.format("hh:mm:ss");
+        this.stats.chart.data.datasets[0].data.push(this.population.length);
+        this.stats.chart.data.datasets[1].data.push(this.food.length);
+        this.stats.chart.data.labels.push(this.elapsedTime);
+        this.stats.chart.update();
 
         this.population.forEach(entity => {
             entity.lifeTimeInSeconds++;
         });
         $('#elapsedTime').text("Time : " + formatted);
+        this.elapsedTime ++;
+    }
+
+    initGraph() {
+        return new Chart(document.getElementById("stats"), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    label: "Population",
+                    borderColor: "#3e95cd",
+                    fill: false
+                }, {
+                    data: [],
+                    label: "Food",
+                    borderColor: "#2ecd3c",
+                    fill: false
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'World stats'
+                }
+            }
+        });
+    }
+
+    showGraph() {
+        if (!this.stats.display) {
+            $("#stats").show();
+            this.stats.display = true;
+        } else {
+            $("#stats").hide();
+            this.stats.display = false;
+        }
     }
 
     init() {
