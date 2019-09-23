@@ -107,7 +107,8 @@ class Entity {
             this.layEgg(price);
 
         }
-        this.headOfPike = rotatePointAroundOrigin({x: this.x + this.spikeLength, y: this.y}, {x: this.x, y: this.y}, this.velocityVector.heading());
+        this.headOfPike = rotatePointAroundOrigin({x: this.x + this.spikeLength, y: this.y}, {x: this.x , y: this.y}, this.velocityVector.heading());
+        this.startOfPike = rotatePointAroundOrigin({x: this.x + this.radius, y: this.y}, {x: this.x , y: this.y}, this.velocityVector.heading());
         this.detectCollisionEntity();
         if (this.touchedEntity && this.spikeLength > this.genome.size / 2) {
             const quantityToSteal = this.consumption * 100;
@@ -140,6 +141,10 @@ class Entity {
         const distanceToEntity = this.calculateDistanceToClosestEntity();
         const speed = vectorMagnitude(this.xVelocity, this.yVelocity) || 0;
         const closestEntityConstantDifference = this.closestEntity ? Math.abs(this.closestEntity.genome.constant - this.genome.constant) : 0;
+        const closestEntitySize = this.closestEntity ? this.closestEntity.genome.size : 0;
+        const closestEntitySpikeLength = this.closestEntity ? this.closestEntity.spikeLength : 0;
+        const closestEntityHealth = this.closestEntity ? this.closestEntity.health : 0;
+        const closestEntitySpeed = this.closestEntity ? vectorMagnitude(this.closestEntity.xVelocity, this.closestEntity.yVelocity) : 0;
         //get the inputs !
         return [
             this.genome.constant,
@@ -158,11 +163,11 @@ class Entity {
             closestEntityConstantDifference,
             angleToHeadingOfEntity,
             distanceToEntity,
+            closestEntitySize,
+            closestEntitySpikeLength,
+            closestEntityHealth,
+            closestEntitySpeed,
             !!this.touchedEntity,
-            this.x - this.radius <= 0,
-            this.x + this.radius >= windowWidth,
-            this.y - this.radius <= 0,
-            this.y + this.radius >= windowHeight,
             this.genome.size
         ];
     }
@@ -225,7 +230,7 @@ class Entity {
     }
 
     detectCollisionEntity() {
-        const entityDescriptor = this.closeEntities.find(({entity}) => collideLineCircle(this.x,this.y, this.headOfPike.x, this.headOfPike.y, entity.x,entity.y, entity.genome.size))
+        const entityDescriptor = this.closeEntities.find(({entity}) => collideLineCircle(this.startOfPike.x,this.startOfPike.y, this.headOfPike.x, this.headOfPike.y, entity.x,entity.y, entity.genome.size))
         this.touchedEntity = entityDescriptor ? entityDescriptor.entity : null;
     }
 
