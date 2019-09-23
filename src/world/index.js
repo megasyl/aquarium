@@ -8,7 +8,9 @@ class World {
 
         this.stats = {
             display: false,
-            chart: this.initGraph()
+            chart: null,
+            food: [],
+            population: []
         };
 
         $("#stats").hide();
@@ -20,10 +22,12 @@ class World {
     countTime(){
         const duration = moment.duration(this.elapsedTime, 'seconds');
         const formatted = duration.format("hh:mm:ss");
-        this.stats.chart.data.datasets[0].data.push(this.population.length);
-        this.stats.chart.data.datasets[1].data.push(this.food.length);
-        this.stats.chart.data.labels.push(this.elapsedTime);
-        this.stats.chart.update();
+        if (this.stats.display) {
+            this.stats.chart.series[0].addPoint(this.population.length);
+            this.stats.chart.series[1].addPoint(this.food.length);
+        }
+        this.stats.food.push(this.food.length);
+        this.stats.population.push(this.population.length);
 
         this.population.forEach(entity => {
             entity.lifeTimeInSeconds++;
@@ -33,37 +37,64 @@ class World {
     }
 
     initGraph() {
-        return new Chart(document.getElementById("stats"), {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    label: "Population",
-                    borderColor: "#3e95cd",
-                    fill: false
-                }, {
-                    data: [],
-                    label: "Food",
-                    borderColor: "#2ecd3c",
-                    fill: false
-                }]
+        return Highcharts.chart('stats', {
+
+            chart: {
+                zoomType: 'x',
+                panning: true,
+                panKey: 'shift',
+                backgroundColor: 'transparent',
+                gridLineWidth: 0
             },
-            options: {
-                title: {
-                    display: true,
-                    text: 'World stats'
-                }
-            }
+
+            boost: {
+                useGPUTranslations: true
+            },
+
+            yAxis: {
+                startOnTick: false,
+                endOnTick: false,
+                tickPositions: [],
+            },
+
+
+            title: {
+                text: 'World stats'
+            },
+
+            subtitle: {
+                text: 'Food and population over time'
+            },
+
+            tooltip: {
+                valueDecimals: 2
+            },
+
+            series: [{
+                data: this.stats.population,
+                lineWidth: 1,
+                name: "Population",
+                color: "#3685ff"
+            }, {
+                data: this.stats.food,
+                name: "Food",
+                color: "#00FF00",
+                lineWidth: 1
+            }]
+
         });
     }
 
     showGraph() {
         if (!this.stats.display) {
+            console.log(this.stats.population)
+            this.stats.chart = this.initGraph();
             $("#stats").show();
             this.stats.display = true;
         } else {
+            $("#stats").html('');
             $("#stats").hide();
+            delete this.stats.chart;
             this.stats.display = false;
         }
     }
