@@ -57,7 +57,7 @@ class Entity {
             return;
         }
         this.radius = this.genome.size / 2;
-        this.consumption = 1/45 + (1/180 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size))) + (this.waste / 4000);
+        this.consumption = 1/45 + (1/180 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size))) + (this.waste / 4000) + (this.spikeLength / 100);
         const input = this.getInput();
         if (this.brainFreeze(input))
             return;
@@ -301,30 +301,11 @@ class Entity {
         fill(this.genome.color);
         ellipse(0, 0, this.genome.size, this.genome.size);
 
-        stroke(0, 255);
-        if (this.angleToFood) {
-                    rotate(this.angleToFood);
-                    line(0,0, 30, 0);
-            rotate(-this.angleToFood);
-        }
-
-        if (this.angleToEntity) {
-            rotate(this.angleToEntity);
-            line(0,0, 30, 0);
-            rotate(-this.angleToEntity);
-        }
-
-        stroke(200, 255);
         // Draw the head line
         rotate(this.velocityVector.heading());
         line(0,0,this.spikeLength,0);
 
         pop();
-
-        push()
-        translate(0,0);
-
-        pop()
     }
 
     drawUI() {
