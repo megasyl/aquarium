@@ -15,10 +15,12 @@ const angleToPoint = (x1, y1, x2, y2) => {
 const randPositionInCircle = (originX, originY, size) => {
     const a = Math.random() * 2 * Math.PI;
     const r = size * Math.sqrt(Math.random());
-    return {
+    const position = {
         x: originX + (r * Math.cos(a)),
         y: originY + (r * Math.sin(a))
     }
+    return position.x > windowWidth || position.y > windowHeight || position.x < 0 || position.y < 0 ?
+        randPositionInCircle(originX, originY, size) : position;
 };
 const rotatePointAroundOrigin = (p, o, a) => ({
     x: Math.cos(a) * (p.x - o.x) - Math.sin(a) * (p.y - o.y) + o.x,
