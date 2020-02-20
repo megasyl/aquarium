@@ -12,8 +12,10 @@ class World {
             food: [],
             population: []
         };
+        this.isModalDisplayed = false;
 
         $("#stats").hide();
+        $("#parameters").hide();
 
         setInterval(this.countTime.bind(this), 1000);
     }
@@ -85,6 +87,17 @@ class World {
         });
     }
 
+    showModal() {
+        if (!this.isModalDisplayed) {
+            $("#parameters").hide();
+            this.isModalDisplayed = true;
+        } else {
+            $("#parameters").show();
+            delete this.stats.chart;
+            this.isModalDisplayed = false;
+        }
+    }
+
     showGraph() {
         if (!this.stats.display) {
             console.log(this.stats.population)
@@ -99,25 +112,41 @@ class World {
         }
     }
 
+    update() {
+        this.population.forEach(entity => entity.update());
+        this.food.forEach(food => food.update());
+        this.eggs.forEach(entity => entity.update());
+        Engine.update(this.physics.engine, 1000/60, 1);
+
+        requestAnimationFrame(() => this.update());
+        //this.update()
+    }
+
     init() {
+        this.physics = new Physics();
         const a = this.config.population ? this.config.population : rules.INITIAL_POPULATION_SIZE;
         for (let i = 0; i < a; i++) {
-            this.population.push(new Entity());
+            const entity = new Entity();
+            this.population.push(entity);
+            this.physics.add(entity.rigidBody);
         }
         for (let i = 0; i < rules.INITIAL_FOOD_COUNT; i++) {
-            this.food.push(new Food());
+            let food = new Food();
+            this.food.push(food);
+            this.physics.add(food.rigidBody);
         }
 
         this.totalEnergy = this.config.totalEnergy || rules.TOTAL_ENERGY_AMOUNT;
+        this.update();
     }
 
     digest(food) {
-        this.food.splice(food, 1);
-        this.food.push(new Food());
-        // this.totalEnergy += entity.waste;
+        this.physics.remove(food.rigidBody)
+        this.food.splice(this.food.indexOf(food), 1)
     }
 
     kill(entity) {
+        this.physics.remove(this.population[entity].rigidBody)
         this.population.splice(entity, 1);
        // this.totalEnergy += entity.waste;
     }
@@ -125,4 +154,21 @@ class World {
     hatch(egg) {
         this.eggs.splice(egg, 1);
     }
+
+    onCollisionStart(bodyA, bodyB) {
+        bodyA.collisions.push(bodyB);
+        bodyB.collisions.push(bodyA);
+    }
+
+    onCollisionEnd(bodyA, bodyB) {
+        bodyA.collisions = bodyA.collisions.filter(c => c !== bodyB);
+        bodyB.collisions = bodyB.collisions.filter(c => c !== bodyA);
+    }
 }
+
+const world = new World();
+
+$( document ).ready(() => {
+
+    world.init()
+});

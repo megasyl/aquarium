@@ -6,6 +6,7 @@ class Egg {
 
         this.lifeTime = 0;
         this.parent = parent;
+        this.collisions = [];
     }
 
     update() {

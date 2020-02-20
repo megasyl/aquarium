@@ -3,9 +3,10 @@ class Entity {
         this.genome = new Genome(parent);
         this.brain = Brain(parent);
 
+
         // State
-        this.x = x || random(0, windowWidth);
-        this.y = y || random(0, windowHeight);
+        this.x = x || random(0, window.innerWidth);
+        this.y = y || random(0, window.innerHeight);
         this.xVelocity = 0;
         this.yVelocity = 0;
         this.xAcceleration = 0;
@@ -17,8 +18,11 @@ class Entity {
         this.waste = 0;
         this.closeFood = [];
         this.closeEntities = [];
-        this.velocityVector = createVector(this.xVelocity, this.yVelocity);
+        //this.velocityVector = createVector(this.xVelocity, this.yVelocity);
         this.spikeLength = 25;
+        this.rigidBody = Bodies.circle(this.x, this.y, this.genome.size, { frictionAir: 1 });
+        this.rigidBody.individual = this;
+        this.collisions = [];
 
         this.output = {
             angle: 0,
@@ -48,16 +52,18 @@ class Entity {
     update() {
         if (this.health <= 0) {
             world.kill(world.population.indexOf(this));
+            //todo fix, beaks equilibrium
             let foodToSpawn = (this.waste + this.health) / rules.INITIAL_FOOD_AMOUNT;
+            console.log(foodToSpawn)
             for (let i = 0; i < Math.round(foodToSpawn); i++) {
-                const position = randPositionInCircle(this.x, this.y, this.genome.size * 8);
-                world.food.push(new Food(position.x, position.y))
+                //const position = randPositionInCircle(this.x, this.y, this.genome.size * 8);
+                world.food.push(new Food(random(0, window.innerHeight), random(0, window.innerWidth)))
             }
             delete this;
             return;
         }
         this.radius = this.genome.size / 2;
-        this.consumption = 1/45 + (1/180 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size))) + (this.waste / 4000) + (this.spikeLength / 100);
+        this.consumption = 1/60 + (1/180 * (Math.pow(vectorMagnitude(this.xVelocity, this.yVelocity), 2) * (1/2*this.genome.size))) + (this.waste / 4000) + (this.spikeLength / 300);
         const input = this.getInput();
         if (this.brainFreeze(input))
             return;
@@ -87,8 +93,8 @@ class Entity {
             this.genome.maxSpeed : this.yVelocity < -this.genome.maxSpeed ?
                 -this.genome.maxSpeed : this.yVelocity;
 
-        this.velocityVector.x = this.xVelocity;
-        this.velocityVector.y = this.yVelocity;
+        //this.velocityVector.x = this.xVelocity;
+        //this.velocityVector.y = this.yVelocity;
 
         // Calculate new position
         this.x += this.xVelocity;
@@ -97,8 +103,8 @@ class Entity {
         if (rules.LIMIT_EDGES) {
             // Limit position to window width and height
 
-            this.x = this.x + this.radius >= windowWidth ? windowWidth - this.radius  : this.x - this.radius <= 0 ? 0 + this.radius : this.x;
-            this.y = this.y + this.radius >= windowHeight ? windowHeight - this.radius : this.y - this.radius <= 0 ? 0 + this.radius : this.y;
+            this.x = this.x + this.radius >= 800 ? 600 - this.radius  : this.x - this.radius <= 0 ? 0 + this.radius : this.x;
+            this.y = this.y + this.radius >= 600 ? 800 - this.radius : this.y - this.radius <= 0 ? 0 + this.radius : this.y;
         } else {
             // Teleport entity to the opposite side
             if (this.x > windowWidth) {
@@ -122,8 +128,8 @@ class Entity {
             this.layEgg(price);
 
         }
-        this.headOfPike = rotatePointAroundOrigin({x: this.x + this.spikeLength, y: this.y}, {x: this.x , y: this.y}, this.velocityVector.heading());
-        this.startOfPike = rotatePointAroundOrigin({x: this.x + this.radius, y: this.y}, {x: this.x , y: this.y}, this.velocityVector.heading());
+        //this.headOfPike = rotatePointAroundOrigin({x: this.x + this.spikeLength, y: this.y}, {x: this.x , y: this.y}, this.velocityVector.heading());
+        //this.startOfPike = rotatePointAroundOrigin({x: this.x + this.radius, y: this.y}, {x: this.x , y: this.y}, this.velocityVector.heading());
         this.detectCollisionEntity();
         if (this.touchedEntity && this.spikeLength > this.genome.size / 2) {
             const quantityToSteal = this.consumption * 100;
@@ -135,7 +141,10 @@ class Entity {
         //console.log(this.consumption)
         this.health -= this.consumption;
         this.waste += this.consumption;
-        this.draw();
+
+
+        Body.applyForce(this.rigidBody, this.rigidBody.position, {x: this.xVelocity / (250 * this.genome.size), y: this.yVelocity / (250 * this.genome.size)})
+        //this.draw();
     }
 
     getInput() {
@@ -144,15 +153,15 @@ class Entity {
             this.brainActivityClock = 0;
         }
 
-        this.detectCloseFood();
-        this.detectClosestFood();
-        this.detectCloseEntities();
-        this.detectClosestEntity();
+        //this.detectCloseFood();
+        //this.detectClosestFood();
+        //this.detectCloseEntities();
+        //this.detectClosestEntity();
 
         const speed = vectorMagnitude(this.xVelocity, this.yVelocity) || 0;
 
-        this.angleToFood = this.calculateAngleToClosestFood();
-        const distanceToFood = this.calculateDistanceToClosestFood();
+        //this.angleToFood = this.calculateAngleToClosestFood();
+        // distanceToFood = this.calculateDistanceToClosestFood();
         const closestFoodAmount = this.closeFood ? this.closeFood.length : 0;
 
         this.angleToEntity = this.calculateAngleToClosestEntity();
@@ -175,8 +184,8 @@ class Entity {
             closestFoodAmount,
             speed,
             //this.closeFood.length,
-            this.angleToFood,
-            distanceToFood / this.genome.smellDistance,
+            //this.angleToFood,
+            //distanceToFood / this.genome.smellDistance,
             this.angleToEntity,
             //closestEntityConstantDifference,
             //angleToHeadingOfEntity,
@@ -201,46 +210,6 @@ class Entity {
 
     }
 
-    detectCloseFood() {
-        this.closeFood = world.food.map(food => ({
-            food: food,
-            distance: calculateDistance(this, food)
-        })).filter(foodDescriptor => foodDescriptor.distance <= this.genome.smellDistance);
-    }
-
-    detectClosestFood() {
-        this.closestFood = this.closeFood.length ?
-            this.closeFood.reduce((min, foodDescriptor) => foodDescriptor.distance < min.distance ? foodDescriptor : min, this.closeFood[0]).food
-            : null;
-    }
-
-    calculateAngleToClosestFood() {
-        if (this.closestFood) {
-            this.relativeFoodPosition = {
-                x: this.closestFood.x - this.x ,
-                y: this.closestFood.y - this.y
-            };
-            return angleToPoint(this.xVelocity, this.yVelocity, this.relativeFoodPosition.x, this.relativeFoodPosition.y);
-        }
-       return 0;
-    }
-
-    calculateDistanceToClosestFood() {
-        return this.closestFood ? calculateDistance(this, this.closestFood) / this.genome.smellDistance : 0;
-    }
-
-    detectCloseEntities() {
-        this.closeEntities = world.population.map(entity => ({
-            entity,
-            distance: calculateDistance(this, entity)
-        })).filter(entityDescriptor => entityDescriptor.distance <= this.genome.soundDistance && entityDescriptor.distance > 0);
-    }
-
-    detectClosestEntity() {
-        this.closestEntity = this.closeEntities.length ?
-            this.closeEntities.reduce((min, entityDescriptor) => entityDescriptor.distance < min.distance ? entityDescriptor : min, this.closeEntities[0]).entity
-            : null;
-    }
 
     calculateAngleToClosestEntity() {
         if (this.closestEntity) {
@@ -302,7 +271,7 @@ class Entity {
         ellipse(0, 0, this.genome.size, this.genome.size);
 
         // Draw the head line
-        rotate(this.velocityVector.heading());
+        //rotate(this.velocityVector.heading());
         line(0,0,this.spikeLength,0);
 
         pop();

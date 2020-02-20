@@ -12,6 +12,7 @@
     <script src="lib/js/chroma.min.js"></script>
     <script src="lib/js/moment.min.js"></script>
     <script src="lib/js/moment-duration.min.js"></script>
+    <script src="lib/js/matter.min.js"></script>
 
     <script src="lib/js/p5.min.js"></script>
     <script src="lib/js/p5.dom.min.js"></script>
@@ -25,8 +26,9 @@
     <script src="src/entity/egg.js"></script>
     <script src="src/entity/index.js"></script>
     <script src="src/food/index.js"></script>
-    <script src="src/world/index.js"></script>
     <script src="src/p5/index.js"></script>
+    <script src="src/physics/index.js"></script>
+    <script src="src/world/index.js"></script>
 
     <link rel="stylesheet" type="text/css" href="lib/css/graph.css">
     <link rel="stylesheet" type="text/css" href="lib/css/bootstrap.min.css">
@@ -36,27 +38,55 @@
 <body style="background-color: #1b1e21">
     <div id="field" style="position: absolute; top: 0px;" width="100%" height="100%"></div>
     <div id="stats" style="position: absolute; height: 100%; width: 100%"></div>
-    <div style="height: 100%">
+    <div class="row" style="width: 100%">
+        <div class="col-md-4 col-lg-4" style="height: 100%">
 
-        <div class="col-md-3 col-lg-3" style="color: #fff; padding-top: 10px" >
+            <div  style="color: #fff; padding-top: 10px" >
 
-            <h3>World</h3>
-            <p id="population">Population 0</p>
-            <p id="food">Food 0</p>
-            <p id="elapsedTime">Time 0</p>
-            <button type="button" class="btn btn-primary-outline" style="color: white" onclick="world.showGraph()">Graph</button>
+                <h3>World</h3>
+                <p id="population">Population 0</p>
+                <p id="food">Food 0</p>
+                <p id="elapsedTime">Time 0</p>
+                <button type="button" class="btn btn-primary-outline" style="color: white" onclick="world.showGraph()">Graph</button>
+                <button type="button" class="btn btn-primary-outline" style="color: white" onclick="world.showModal()">Parameters</button>
+            </div>
+            <div style="color: #fff; padding-top: 10px" >
+                <h3 id="#entityTitle">Entity (click on one)</h3>
+                <p id="health"></p>
+                <p id="waste"></p>
+                <p id="generation"></p>
+                <p id="lifeTime"></p>
+                <p id="children"></p>
+            </div>
+            <div  >
+                <svg class="draw" style="height: 100%; width: 100%"/>
+            </div>
         </div>
-        <div class="col-md-3 col-lg-3" style="color: #fff; padding-top: 10px" >
-            <h3 id="#entityTitle">Entity (click on one)</h3>
-            <p id="health"></p>
-            <p id="waste"></p>
-            <p id="generation"></p>
-            <p id="lifeTime"></p>
-            <p id="children"></p>
-        </div>
-        <div class="col-md-5 col-lg-5" >
-            <svg class="draw" style="height: 100%; width: 100%"/>
+        <div id="parameters" class="col-md-4 col-lg-4 " style="height: 100%; display: flex; align-items: center;">
+
+            <div  style="color: #fff; padding-top: 10px; width: 100%" >
+
+                <form>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                    </div>
+                    <hr class="separator">
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">Password</label>
+                        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+
+            </div>
         </div>
     </div>
+
 </body>
 </html>

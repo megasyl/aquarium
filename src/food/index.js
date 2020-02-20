@@ -1,14 +1,32 @@
 class Food {
     constructor(x, y, amount) {
-        this.x = x || random(0, windowWidth);
-        this.y = y || random(0, windowHeight);
+        this.x = x || random(0, window.innerWidth);
+        this.y = y || random(0, window.innerHeight);
 
         this.amount = amount || rules.INITIAL_FOOD_AMOUNT;
-        this.radius = this.amount / 40;
+
+        this.radius = this.amount / 50;
+
+        this.rigidBody = Bodies.circle(this.x, this.y, this.radius, {
+            frictionAir: 1,
+            render: {
+                fillStyle: 'yellow',
+            }
+        });
+        this.rigidBody.individual = this;
+        this.collisions = [];
+
     }
 
     update() {
-        this.draw();
+        this.collisions.forEach(body => {
+            if (body instanceof Entity) {
+                body.health += this.amount;
+                world.digest(this);
+            }
+
+        })
+        //this.draw();
     }
 
     draw() {

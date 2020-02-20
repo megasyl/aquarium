@@ -2,3 +2,7 @@
     color: #ccc;
     border-color: #ccc;
 }
+
+.form-control {
+    background-color: transparent!important;
+}

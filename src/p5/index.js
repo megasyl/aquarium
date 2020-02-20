@@ -1,14 +1,15 @@
-let world;
+//let world;
 let selected;
 let graphDrawSwitch;
 function setup() {
-    createCanvas(windowWidth, windowHeight).parent('field');
+    /*createCanvas(windowWidth, windowHeight).parent('field');
     world = new World();
-    world.init();
+    world.init();*/
 }
 
 
 function draw() {
+    return;
     clear();
     world.population.forEach(entity => entity.update());
     world.food.forEach(food => food.update());
