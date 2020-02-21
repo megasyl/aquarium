@@ -9,6 +9,9 @@ class Food {
 
         this.rigidBody = Bodies.circle(this.x, this.y, this.radius, {
             frictionAir: 1,
+            collisionFilter: {
+                category: bodyCategories.food
+            },
             render: {
                 fillStyle: 'yellow',
             }
@@ -18,16 +21,7 @@ class Food {
 
     }
 
-    update() {
-        this.collisions.forEach(body => {
-            if (body instanceof Entity) {
-                body.health += this.amount;
-                world.digest(this);
-            }
-
-        })
-        //this.draw();
-    }
+    update() { }
 
     draw() {
         push();

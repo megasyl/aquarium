@@ -1,5 +1,5 @@
 const {
-    Engine, Render, World: mWorld, Bodies, Body, Events
+    Engine, Render, World: mWorld, Bodies, Body, Events, Constraint
 } = Matter;
 
 class Physics {
@@ -35,11 +35,11 @@ class Physics {
         });*/
 
         Events.on(this.engine, "collisionStart", (event) => {
-            world.onCollisionStart(event.pairs[0].bodyA.individual, event.pairs[0].bodyB.individual)
+            world.onCollisionStart(event.pairs)
         });
 
         Events.on(this.engine, "collisionEnd", (event) => {
-            world.onCollisionEnd(event.pairs[0].bodyA.individual, event.pairs[0].bodyB.individual)
+            world.onCollisionEnd(event.pairs)
         });
 
         //Engine.run(this.engine);

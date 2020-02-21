@@ -100,7 +100,6 @@ class World {
 
     showGraph() {
         if (!this.stats.display) {
-            console.log(this.stats.population)
             this.stats.chart = this.initGraph();
             $("#stats").show();
             this.stats.display = true;
@@ -129,6 +128,8 @@ class World {
             const entity = new Entity();
             this.population.push(entity);
             this.physics.add(entity.rigidBody);
+            this.physics.add(entity.foodDetector);
+            this.physics.add(entity.foodDetectorConstraint);
         }
         for (let i = 0; i < rules.INITIAL_FOOD_COUNT; i++) {
             let food = new Food();
@@ -141,12 +142,14 @@ class World {
     }
 
     digest(food) {
-        this.physics.remove(food.rigidBody)
+        this.physics.remove(food.rigidBody);
         this.food.splice(this.food.indexOf(food), 1)
     }
 
     kill(entity) {
-        this.physics.remove(this.population[entity].rigidBody)
+        this.physics.remove(this.population[entity].rigidBody);
+        this.physics.remove(this.population[entity].foodDetector);
+        this.physics.remove(this.population[entity].foodDetectorConstraint);
         this.population.splice(entity, 1);
        // this.totalEnergy += entity.waste;
     }
@@ -155,14 +158,46 @@ class World {
         this.eggs.splice(egg, 1);
     }
 
-    onCollisionStart(bodyA, bodyB) {
-        bodyA.collisions.push(bodyB);
-        bodyB.collisions.push(bodyA);
+    onCollisionStart(pairs) {
+        pairs.forEach(({ bodyA, bodyB }) => {
+            const bodyACategory = bodyA.collisionFilter.category;
+            const bodyBCategory = bodyB.collisionFilter.category;
+            const individualA = bodyA.individual;
+            const individualB = bodyB.individual;
+
+
+            switch (bodyACategory) {
+                case bodyCategories.foodDetector:
+                    individualA.collisions.food.push(bodyB.individual);
+                    return;
+            }
+            switch (bodyBCategory) {
+                case bodyCategories.foodDetector:
+                    individualB.collisions.food.push(bodyA.individual);
+                    return;
+            }
+        });
     }
 
-    onCollisionEnd(bodyA, bodyB) {
-        bodyA.collisions = bodyA.collisions.filter(c => c !== bodyB);
-        bodyB.collisions = bodyB.collisions.filter(c => c !== bodyA);
+    onCollisionEnd(pairs) {
+        pairs.forEach(({ bodyA, bodyB }) => {
+            const bodyACategory = bodyA.collisionFilter.category;
+            const bodyBCategory = bodyB.collisionFilter.category;
+            const individualA = bodyA.individual;
+            const individualB = bodyB.individual;
+
+            switch (bodyACategory) {
+                case bodyCategories.foodDetector:
+                    individualA.collisions.food = individualA.collisions.food.filter(c => c !== individualB);
+                    return;
+            }
+            switch (bodyBCategory) {
+                case bodyCategories.foodDetector:
+                    individualB.collisions.food = individualB.collisions.food.filter(c => c !== individualA);
+                    return;
+            }
+        });
+
     }
 }
 

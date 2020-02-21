@@ -13,7 +13,7 @@ const Brain = (parent) => {
         neataptic.methods.mutation.SUB_SELF_CONN,
         neataptic.methods.mutation.ADD_BACK_CONN,
         neataptic.methods.mutation.SUB_BACK_CONN
-    ]
+    ];
     let brain;
     if (parent) {
         // Always mutate child brains !
