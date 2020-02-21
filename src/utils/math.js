@@ -26,7 +26,11 @@ const randPositionInCircle = (originX, originY, size) => {
 const rotatePointAroundOrigin = (p, o, a) => ({
     x: Math.cos(a) * (p.x - o.x) - Math.sin(a) * (p.y - o.y) + o.x,
     y: Math.sin(a) * (p.x - o.x) + Math.cos(a) * (p.y - o.y) + o.y
+});
 
+const rotateVectorByAngle = ({x, y}, angle) => ({
+    x: Math.cos(angle * x) - Math.sin(angle * y),
+    y: Math.sin(angle * x) + Math.cos(angle * y)
 });
 
 

@@ -112,12 +112,20 @@ class Entity {
         }
 
         //console.log(this.health, this.consumption)
-        this.health -= this.consumption;
-        this.waste += this.consumption;
+        //this.health -= this.consumption;
+        //this.waste += this.consumption;
 
         console.log(this.output.angle)
         Body.rotate(this.rigidBody, this.output.angle)
-        Body.applyForce(this.rigidBody, position, {x: velocity.x / (250 * this.genome.size), y: velocity.y / (250 * this.genome.size)});
+        Body.rotate(this.foodDetector, this.output.angle);
+        console.log(0.0001 * this.output.velocityFactor)
+       // console.log(rotateVectorByAngle({x: 0.001, y: 0}, this.rigidBody.angle * (Math.pi / 180), this.rigidBody.angle * (Math.pi / 180))
+        Body.applyForce(this.rigidBody, position, {
+            x: Math.cos(this.output.angle) * this.output.velocityFactor,
+            y: Math.sin(this.output.angle) * this.output.velocityFactor
+        });
+
+        //Body.applyForce(this.rigidBody, position, {x: velocity.x / (250 * this.genome.size), y: velocity.y / (250 * this.genome.size)});
         this.drawUI();
     }
 
@@ -144,6 +152,7 @@ class Entity {
 
 
         const closestFood = this.getClosestFood();
+        console.log(closestFood)
         const foodAngle = closestFood.food ? this.angleToClosestFood(closestFood.food) : 0;
         const speed = vectorMagnitude(this.rigidBody.velocity.x, this.rigidBody.velocity.y) || 0;
         const closestFoodAmount = this.collisions.food.length;
@@ -188,8 +197,8 @@ class Entity {
 
     setOutput(output) {
         //this.output.angle = (output[0]) * 2 * Math.PI;
-        this.output.angle = output[0];
-        this.output.velocityFactor = output[1] * this.genome.maxSpeed / 10;
+        this.output.angle = output[0] * 2 * Math.PI;
+        this.output.velocityFactor = output[1] > rules.INITIAL_MAX_SPEED ? rules.INITIAL_MAX_SPEED : output[1];
         //this.output.wantToEat = output[2] < 0.5;
         this.output.wantToLay = output[2] > 0.5;
         this.output.spikeLength = this.genome.size /2 + ((output[3] % 1) * (25 - this.genome.size /2))
