@@ -4,4 +4,5 @@ const bodyCategories = {
     egg: 0x0003,
     foodDetector: 0x0004,
     entityDetector: 0x0005,
+    wall: 0x0006,
 };

@@ -1,5 +1,5 @@
 const {
-    Engine, Render, World: mWorld, Bodies, Body, Events, Constraint
+    Engine, Render, World: mWorld, Bodies, Body, Events, Constraint, Vector, Mouse, MouseConstraint, Bounds
 } = Matter;
 
 class Physics {
@@ -7,32 +7,31 @@ class Physics {
 
         this.engine = Engine.create();
         this.engine.world.gravity.y = 0;
-        this.engine.timing.timeScale = 1;
-        var canvas = $( "#field" )[ 0 ];
+        this.engine.timing.timeScale = rules.TIMESCALE;
+        const canvas = $( "#field" )[ 0 ];
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-
-
-
-        var render = Render.create({
-            element: $( "#field" )[ 0 ],
+        this.render = Render.create({
+            element: canvas,
             engine: this.engine,
             options: {
                 width: window.innerWidth,
                 height: window.innerHeight,
                 wireframes: false,
-                showAngleIndicator: true,
+
+                hasBounds: true
+                //showAngleIndicator: true,
             }
         });
 
-        /*.on(this.engine, "collisionActive", (event) => {
-            console.log(event)
-            event.pairs.forEach(pair => {
+       /* this.engine.world.bounds.min.x = -300;
+        this.engine.world.bounds.min.y = -300;
+        this.engine.world.bounds.max.x = 1100;
+        this.engine.world.bounds.max.y = 900;*/
 
-            })
-        });*/
+        //new Camera(this);
 
         Events.on(this.engine, "collisionStart", (event) => {
             world.onCollisionStart(event.pairs)
@@ -42,21 +41,31 @@ class Physics {
             world.onCollisionEnd(event.pairs)
         });
 
-        //Engine.run(this.engine);
+        Render.run(this.render);
 
-        Render.run(render);
+        this.setupWalls();
+    }
 
-        /*document.body.onmousemove = event => {
-            var targetAngle = Matter.Vector.angle(ball.position, {x: event.clientX, y: event.clientY});
-            var force = 0.0001;
-            // Suivi de la position de la souris dans la console
-            Body.applyForce(ball, ball.position, {
-                x: Math.cos(targetAngle) * force,
-                y: Math.sin(targetAngle) * force
-            });
-            Body.setAngularVelocity(ball, 0.5)
-            console.log(`Position de la souris : X = ${event.clientX} | Y = ${event.clientY}`);
-        }*/
+    addWall(x, y, w, h) {
+        this.add(
+            Bodies.rectangle(x, y, w, h, {
+                isStatic: true,
+                collisionFilter: {
+                    category: bodyCategories.wall
+                }
+            })
+        );
+    }
+
+    setupWalls() {
+        const wallSize = 20;
+        const offset = 0;
+
+        this.addWall(window.innerWidth/2, -offset, window.innerWidth + 2 * offset, wallSize);
+
+        this.addWall(window.innerWidth/2, window.innerHeight + offset, window.innerWidth + 2 * offset, wallSize);
+        this.addWall(window.innerWidth+ offset, window.innerHeight /2, wallSize, window.innerHeight + 2 * offset);
+        this.addWall(-offset, window.innerHeight /2, wallSize, window.innerHeight + 2 * offset);
     }
 
     add(body) {

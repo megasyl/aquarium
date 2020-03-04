@@ -12,13 +12,15 @@ class Entity {
         this.lifeTime = 0;
         this.brainActivityClock = 0;
         this.waste = 0;
-        this.closeEntities = [];
         this.spikeLength = 25;
-        this.rigidBody = Bodies.circle(this.x, this.y, this.genome.size, { frictionAir: 1,
+        const bodyOptions = { frictionAir: 1,
             collisionFilter: {
                 category: bodyCategories.entity
             }
-        });
+        };
+        if (parent)
+            bodyOptions.render.fillStyle = parent.rigidBody.render.fillStyle;
+        this.rigidBody = Bodies.circle(this.x, this.y, this.genome.size, bodyOptions);
         this.foodDetector = Bodies.circle(this.x, this.y, this.genome.smellDistance, {
             frictionAir: 1,
             isSensor: true,
@@ -29,18 +31,25 @@ class Entity {
             },
             render: {
                 fillStyle: 'transparent',
-                strokeStyle: 'green',
-                lineWidth: 1
+                //strokeStyle: 'green',
+                lineWidth: 0
             }
         });
         Body.setMass(this.foodDetector, 0.0001);
         this.foodDetectorConstraint = Constraint.create({
             bodyA: this.rigidBody,
             bodyB: this.foodDetector,
+            render: {
+                visible: false
+            }
         });
         this.rigidBody.individual = this;
         this.foodDetector.individual = this;
         this.collisions = {
+            food: [],
+            entities: []
+        };
+        this.detections = {
             food: [],
             entities: []
         };
@@ -59,9 +68,9 @@ class Entity {
 
     }
 
-    brainFreeze(array) {
+    brainFreeze(array, n) {
         if (array.filter(i => isNaN(i)).length) {
-            console.log("BVRAIN FREEZE")
+            console.log("BVRAIN FREEZE", array, n)
             //brain freeze :(
             this.waste += this.health;
             this.health = 0;
@@ -70,10 +79,10 @@ class Entity {
         return false;
     }
 
-    update() {
+    async update() {
         const { position, velocity } = this.rigidBody;
         if (this.health <= 0) {
-            world.kill(world.population.indexOf(this));
+            world.kill(this);
             //todo fix, beaks equilibrium
             let foodToSpawn = (this.waste + this.health) / rules.INITIAL_FOOD_AMOUNT;
             for (let i = 0; i < Math.round(foodToSpawn); i++) {
@@ -84,47 +93,48 @@ class Entity {
             return;
         }
         this.radius = this.genome.size / 2;
-        this.consumption = 1/60 + (1/180 * (Math.pow(vectorMagnitude(velocity.x, velocity.y), 2) * (1/2*this.genome.size))) + (this.waste / 4000) + (this.spikeLength / 300);
         const input = this.getInput();
+        if (this.brainFreeze(input, "input")) {
 
-        if (this.brainFreeze(input))
             return;
-
+        }
         const output = this.brain.activate(input);
-        if (this.brainFreeze(output))
-            return;
-        this.setOutput(output);
+        if (this.brainFreeze(output, "output")) {
 
+            return;
+        }
+        this.setOutput(output);
         if (this.output.resetChrono) {
+
             this.chrono = 0;
         }
-
         this.spikeLength = this.output.spikeLength;
 
-
         this.lifeTime += 1;
+
+
         this.brainActivityClock += 1;
         const price = this.genome.minHealth //* (rules.EGG_LAYING_HEALTH_PRICE_PERCENTAGE / 100);
-        //this.eat();
-        if (this.output.wantToLay && this.health >= price && this.lifeTime >= this.genome.maxLifeTime * 0.2) {
+        if (this.output.wantToLay && this.health > price && this.lifeTime >= this.genome.maxLifeTime * 0.2) {
             this.layEgg(price);
 
         }
 
-        //console.log(this.health, this.consumption)
-        //this.health -= this.consumption;
-        //this.waste += this.consumption;
+        this.rigidBody.torque = this.output.angle / 1000;
 
-        console.log(this.output.angle)
-        Body.rotate(this.rigidBody, this.output.angle)
-        Body.rotate(this.foodDetector, this.output.angle);
-        console.log(0.0001 * this.output.velocityFactor)
-       // console.log(rotateVectorByAngle({x: 0.001, y: 0}, this.rigidBody.angle * (Math.pi / 180), this.rigidBody.angle * (Math.pi / 180))
-        Body.applyForce(this.rigidBody, position, {
-            x: Math.cos(this.output.angle) * this.output.velocityFactor,
-            y: Math.sin(this.output.angle) * this.output.velocityFactor
-        });
 
+        //this.eat();
+        this.health -= 0.1;
+        //this.consumption = 1/60 + (1/180 * (Math.pow(vectorMagnitude(velocity.x, velocity.y), 2) * (1/2*this.genome.size))) + (this.waste / 4000) + (this.spikeLength / 300);
+        const force = {
+            x: Math.cos(this.rigidBody.angle) / 1000 * this.output.velocityFactor,
+            y: Math.sin(this.rigidBody.angle) / 1000 * this.output.velocityFactor
+        };
+
+        Body.applyForce(this.rigidBody, position, force);
+
+        const aFood = this.collisions.food.shift();
+        if (aFood) this.eat(aFood);
         //Body.applyForce(this.rigidBody, position, {x: velocity.x / (250 * this.genome.size), y: velocity.y / (250 * this.genome.size)});
         this.drawUI();
     }
@@ -152,19 +162,10 @@ class Entity {
 
 
         const closestFood = this.getClosestFood();
-        console.log(closestFood)
-        const foodAngle = closestFood.food ? this.angleToClosestFood(closestFood.food) : 0;
+        //const foodAngle = closestFood.food ? this.angleToClosestFood(closestFood.food) : 0;
+        const foodAngle = closestFood.food ? Vector.angle(this.rigidBody.velocity, closestFood.food.rigidBody.position) : 0 //.angleToClosestFood(closestFood.food) : 0;
         const speed = vectorMagnitude(this.rigidBody.velocity.x, this.rigidBody.velocity.y) || 0;
         const closestFoodAmount = this.collisions.food.length;
-
-        //const angleToHeadingOfEntity = this.calculateAngleToHeadingOfClosestEntity();
-
-        /*const distanceToEntity = this.calculateDistanceToClosestEntity();
-        const closestEntityConstantDifference = this.closestEntity ? Math.abs(this.closestEntity.genome.constant - this.genome.constant) : 0;
-        const closestEntitySize = this.closestEntity ? this.closestEntity.genome.size : 0;
-        const closestEntitySpikeLength = this.closestEntity ? this.closestEntity.spikeLength : 0;
-        const closestEntityHealth = this.closestEntity ? this.closestEntity.health : 0;
-        const closestEntitySpeed = this.closestEntity ? vectorMagnitude(this.closestEntity.xVelocity, this.closestEntity.yVelocity) : 0;*/
 
         //get the inputs !
         return [
@@ -176,7 +177,10 @@ class Entity {
             this.health / this.genome.minHealth,
             this.lifeTime,
             closestFoodAmount,
-            speed,
+            //this.rigidBody.angularVelocity,
+            //this.rigidBody.force,
+            this.rigidBody.motion,
+            this.rigidBody.speed,
             foodAngle,
             closestFood.distance / this.genome.smellDistance,
             //this.closeFood.length,
@@ -197,8 +201,9 @@ class Entity {
 
     setOutput(output) {
         //this.output.angle = (output[0]) * 2 * Math.PI;
-        this.output.angle = output[0] * 2 * Math.PI;
-        this.output.velocityFactor = output[1] > rules.INITIAL_MAX_SPEED ? rules.INITIAL_MAX_SPEED : output[1];
+        this.output.angle = output[0];
+        this.output.velocityFactor = output[1] > this.genome.maxSpeed ? this.genome.maxSpeed : output[1];
+        this.output.velocityFactor = this.output.velocityFactor > 0 ? this.output.velocityFactor : 0;
         //this.output.wantToEat = output[2] < 0.5;
         this.output.wantToLay = output[2] > 0.5;
         this.output.spikeLength = this.genome.size /2 + ((output[3] % 1) * (25 - this.genome.size /2))
@@ -217,13 +222,12 @@ class Entity {
     }
 
     eat(food) {
-        console.log("EAT", food)
         this.health += food.amount;
         world.digest(food);
     }
 
     layEgg(price) {
-        world.eggs.push(new Egg(this, price));
+        world.spawnEgg(new Egg(this, price));
         this.health -= price;
         //this.waste += price;
         this.children += 1;

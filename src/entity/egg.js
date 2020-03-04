@@ -1,21 +1,25 @@
 class Egg {
     constructor(parent, price) {
         // State
-        this.x = parent.x;
-        this.y = parent.y;
+        this.x = parent.rigidBody.position.x + parent.genome.size + 1;
+        this.y = parent.rigidBody.position.y;
 
         this.lifeTime = 0;
         this.parent = parent;
-        this.collisions = [];
+        this.rigidBody = Bodies.circle(this.x, this.y, 1, { frictionAir: 1,
+            collisionFilter: {
+                category: bodyCategories.egg
+            }
+        });
     }
 
-    update() {
+    async update() {
         if (this.lifeTime >= rules.EGG_HATCHING_TIME) {
-            world.hatch(world.eggs.indexOf(this));
-            world.population.push(new Entity(this.parent, this.x, this.y));
+            world.birth(new Entity(this.parent, this.x, this.y));
+            world.kill(this)
+            delete this;
         } else {
             this.lifeTime++;
-            this.draw();
         }
     }
 

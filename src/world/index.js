@@ -5,6 +5,7 @@ class World {
         this.eggs = [];
         this.elapsedTime = 0;
         this.config = config;
+        this.lastUpdateTime = 0;
 
         this.stats = {
             display: false,
@@ -12,10 +13,8 @@ class World {
             food: [],
             population: []
         };
-        this.isModalDisplayed = false;
+        this.isModalDisplayed = true;
 
-        $("#stats").hide();
-        $("#parameters").hide();
 
         setInterval(this.countTime.bind(this), 1000);
     }
@@ -111,25 +110,31 @@ class World {
         }
     }
 
-    update() {
-        this.population.forEach(entity => entity.update());
+
+    async update() {
+        await Promise.all(this.population.map(entity => entity.update()));
         this.food.forEach(food => food.update());
         this.eggs.forEach(entity => entity.update());
+        this.camera.update();
+
         Engine.update(this.physics.engine, 1000/60, 1);
 
         requestAnimationFrame(() => this.update());
+
+        $('#population').text('Population : ' + this.population.length);
+        $('#food').text('Food : ' + this.food.length);
         //this.update()
     }
 
     init() {
+        $("#stats").hide();
+        $("#parameters").hide();
+
         this.physics = new Physics();
+        this.camera = new Camera(this.physics);
         const a = this.config.population ? this.config.population : rules.INITIAL_POPULATION_SIZE;
         for (let i = 0; i < a; i++) {
-            const entity = new Entity();
-            this.population.push(entity);
-            this.physics.add(entity.rigidBody);
-            this.physics.add(entity.foodDetector);
-            this.physics.add(entity.foodDetectorConstraint);
+            this.birth();
         }
         for (let i = 0; i < rules.INITIAL_FOOD_COUNT; i++) {
             let food = new Food();
@@ -146,12 +151,33 @@ class World {
         this.food.splice(this.food.indexOf(food), 1)
     }
 
+    birth(entity) {
+        if (!entity) entity = new Entity();
+        this.population.push(entity);
+        this.physics.add(entity.rigidBody);
+        this.physics.add(entity.foodDetector);
+        this.physics.add(entity.foodDetectorConstraint);
+    }
+
+    spawnEgg(egg) {
+        this.eggs.push(egg);
+        this.physics.add(egg.rigidBody);
+    }
+
     kill(entity) {
-        this.physics.remove(this.population[entity].rigidBody);
-        this.physics.remove(this.population[entity].foodDetector);
-        this.physics.remove(this.population[entity].foodDetectorConstraint);
-        this.population.splice(entity, 1);
-       // this.totalEnergy += entity.waste;
+        if (entity instanceof Entity) {
+            this.physics.remove(entity.foodDetectorConstraint);
+            delete entity.foodDetectorConstraint;
+            this.physics.remove(entity.foodDetector);
+            delete entity.foodDetector;
+            this.population.splice(this.population.indexOf(entity), 1);
+        }
+        if (entity instanceof Egg) {
+            this.eggs.splice(this.eggs.indexOf(entity), 1);
+        }
+        this.physics.remove(entity.rigidBody);
+        delete entity.rigidBody;
+        // this.totalEnergy += entity.waste;
     }
 
     hatch(egg) {
@@ -165,15 +191,26 @@ class World {
             const individualA = bodyA.individual;
             const individualB = bodyB.individual;
 
-
             switch (bodyACategory) {
                 case bodyCategories.foodDetector:
-                    individualA.collisions.food.push(bodyB.individual);
+                    individualA.detections.food.push(bodyB.individual);
+                    return;
+                case bodyCategories.entity:
+                    if (bodyBCategory === bodyCategories.food)
+                        individualA.collisions.food.push(bodyB.individual);
+                    return;
+                case bodyCategories.wall:
                     return;
             }
             switch (bodyBCategory) {
                 case bodyCategories.foodDetector:
+                    individualB.detections.food.push(bodyA.individual);
+                    return;
+                case bodyCategories.entity:
+                    if (bodyACategory === bodyCategories.food)
                     individualB.collisions.food.push(bodyA.individual);
+                    return;
+                case bodyCategories.wall:
                     return;
             }
         });
@@ -188,11 +225,17 @@ class World {
 
             switch (bodyACategory) {
                 case bodyCategories.foodDetector:
+                    individualA.detections.food = individualA.detections.food.filter(c => c !== individualB);
+                    return;
+                case bodyCategories.entity:
                     individualA.collisions.food = individualA.collisions.food.filter(c => c !== individualB);
                     return;
             }
             switch (bodyBCategory) {
                 case bodyCategories.foodDetector:
+                    individualB.detections.food = individualB.detections.food.filter(c => c !== individualA);
+                    return;
+                case bodyCategories.entity:
                     individualB.collisions.food = individualB.collisions.food.filter(c => c !== individualA);
                     return;
             }

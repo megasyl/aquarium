@@ -5,7 +5,7 @@ class Food {
 
         this.amount = amount || rules.INITIAL_FOOD_AMOUNT;
 
-        this.radius = this.amount / 50;
+        this.radius = this.amount / 100;
 
         this.rigidBody = Bodies.circle(this.x, this.y, this.radius, {
             frictionAir: 1,
