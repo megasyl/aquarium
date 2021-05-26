@@ -25,7 +25,7 @@ const rules = {
     MAX_CHRONO_VARIATION_PERCENTAGE: 8,
 
     // Brain initial values
-    INPUT_NUMBER: 12,
+    INPUT_NUMBER: 13,
     OUTPUT_NUMBER: 5,
     BRAIN_INITIAL_MUTATION_NUMBER: 200,
 

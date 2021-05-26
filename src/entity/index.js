@@ -163,7 +163,8 @@ class Entity {
 
         const closestFood = this.getClosestFood();
         //const foodAngle = closestFood.food ? this.angleToClosestFood(closestFood.food) : 0;
-        const foodAngle = closestFood.food ? Vector.angle(this.rigidBody.velocity, closestFood.food.rigidBody.position) : 0 //.angleToClosestFood(closestFood.food) : 0;
+        const velFoodAngle = closestFood.food ? Vector.angle(this.rigidBody.velocity, closestFood.food.rigidBody.position) : 0 //.angleToClosestFood(closestFood.food) : 0;
+        const posFoodAngle = closestFood.food ? Vector.angle(this.rigidBody.position, closestFood.food.rigidBody.position) : 0 //.angleToClosestFood(closestFood.food) : 0;
         const speed = vectorMagnitude(this.rigidBody.velocity.x, this.rigidBody.velocity.y) || 0;
         const closestFoodAmount = this.collisions.food.length;
 
@@ -181,7 +182,8 @@ class Entity {
             //this.rigidBody.force,
             this.rigidBody.motion,
             this.rigidBody.speed,
-            foodAngle,
+            posFoodAngle,
+            velFoodAngle,
             closestFood.distance / this.genome.smellDistance,
             //this.closeFood.length,
             //this.angleToFood,
